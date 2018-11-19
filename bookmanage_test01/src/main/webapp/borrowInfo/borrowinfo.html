@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>Examples</title>
+<meta name="description" content="">
+<meta name="keywords" content="">
+<link href="" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="../scripts/demo.css">
+<script type="text/javascript" src="../scripts/boot.js"></script>
+<link rel="stylesheet" type="text/css" href="../scripts/miniui/themes/metro-orange/skin.css">
+<link rel="stylesheet" type="text/css" href="../scripts/miniui/themes/icons.css">
+</head>
+<body>
+    <style type="text/css">
+    	html,body{
+    		margin:0;padding:0;border:0;width:100%;height:100%;overflow:hidden;
+    	}
+        .Return_Button{
+            font-size:11px;color:#1B3F91;font-family:Verdana;  
+            margin-right:5px;text-decoration: none;          
+        }
+    </style>
+    <div class="mini-toolbar" style="padding:2px;border-bottom:0;">
+        <table style="width:100%;">
+            <tr>
+            <td style="width:100%;">
+                <a class="mini-button" iconCls="icon-add" plain="true" onclick="addBorrow()">借阅图书</a>
+                
+            </td>
+            
+        </table>
+    </div>
+    <!--撑满页面-->
+    <div class="mini-fit" >
+        
+        <div id="datagrid1" class="mini-datagrid" style="width:100%;height:100%;" 
+            url="../BorrowInfoServlet?type=listBorrowInfos"  idField="id"
+            sizeList="[5,10,20,50]" pageSize="10"
+        >
+            <div property="columns">
+                
+                <div field="borrowId" width="120" headerAlign="center" align="center">借阅号</div>    
+                <div field="bookName" width="120" headerAlign="center" align="center" >图书名称</div>                            
+                <div field="borrower" width="100" headeralign="center" align="center">借阅人</div>
+                <div field="phone" width="100" headeralign="center" align="center">联系电话</div>                                    
+                <div field="borrowTime" width="100" headeralign="center" align="center">借阅时间</div>
+                <div field="returnTime" width="100" headerAlign="center" align="center">归还时间</div>     
+                <div name="action" width="100" headerAlign="center" align="center" renderer="onActionRenderer" cellStyle="padding:0;">操作</div>           
+            </div>
+        </div> 
+       
+    </div>
+    
+    <script type="text/javascript">
+        
+        mini.parse();
+
+        var grid = mini.get("datagrid1");
+        grid.load();
+        ////////////////////////////////////////////////////////////////////////////
+
+        
+        /*弹出框方法*/
+        function addBorrow() {
+            mini.open({
+                url: "../borrowInfo/addBorrow.html",
+                title: "新增借阅信息", width: 500, height: 500,
+                
+                ondestroy: function (action) {
+                    grid.reload();
+                }
+            });        
+        }
+       
+        /*渲染--操作按钮*/
+        function onActionRenderer(e) {
+            var grid = e.sender;
+            var record = e.record;
+            var uid = record._uid;
+            var rowIndex = e.rowIndex;
+
+            var s = '<a class="Return_Button" href="javascript:editRow(\'' + uid + '\')">还书</a>';
+
+            return s;
+        }
+       
+        function cancelRow(row_uid) {            
+            grid.reload();
+        }
+        function editRow(row_uid) {
+            var row = grid.getRowByUID(row_uid);
+            if (row) {
+                if (confirm("确定归还此书？")) {
+                    grid.loading("归还中，请稍后......");
+                    $.ajax({
+                        url: "../BorrowInfoServlet?type=returnBorrowInfo&borrowId=" + row.borrowId,
+                        success: function (text) {
+                            if(text != null && text != ""){
+                                alert(text);
+                            }
+                          
+                            grid.reload();
+                        },
+                        error: function () {
+                        }
+                    });
+                }
+            }
+        }
+
+        
+    </script>
+</body>
+</html>
